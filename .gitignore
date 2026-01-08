@@ -1,0 +1,43 @@
+# Binaries
+upload-server
+consumer-server
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Test binary, built with `go test -c`
+*.test
+
+# Output of the go coverage tool
+*.out
+
+# Go workspace file
+go.work
+
+# Dependencies
+vendor/
+
+# Local files storage
+files/
+*.log
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Build artifacts
+/tmp/
+*.tmp
+
+# Go cache (if using local cache)
+.go-cache/
+.go-pkg/
