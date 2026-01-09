@@ -114,6 +114,79 @@ func (c *Client) GetLatestFileMetadata(ctx context.Context, filename string) (*m
 	return c.GetFileMetadata(ctx, filename, version)
 }
 
+// RegisterConsumer registers a consumer in Redis
+// Key patterns:
+//   - consumer:{consumer_id} - Hash with consumer info
+//   - consumers:active - Set of active consumer IDs
+func (c *Client) RegisterConsumer(ctx context.Context, consumerID, endpoint string) error {
+	consumerKey := fmt.Sprintf("consumer:%s", consumerID)
+	activeConsumersKey := "consumers:active"
+
+	pipe := c.rdb.TxPipeline()
+
+	// Store consumer info
+	pipe.HSet(ctx, consumerKey, map[string]interface{}{
+		"consumer_id": consumerID,
+		"endpoint":    endpoint,
+		"registered_at": time.Now().Format(time.RFC3339),
+		"last_seen":     time.Now().Format(time.RFC3339),
+	})
+
+	// Add to active consumers set
+	pipe.SAdd(ctx, activeConsumersKey, consumerID)
+
+	// Set expiration on consumer key (24 hours)
+	pipe.Expire(ctx, consumerKey, 24*time.Hour)
+
+	_, err := pipe.Exec(ctx)
+	if err != nil {
+		return fmt.Errorf("failed to register consumer: %w", err)
+	}
+
+	return nil
+}
+
+// UpdateConsumerLastSeen updates the last seen timestamp for a consumer
+func (c *Client) UpdateConsumerLastSeen(ctx context.Context, consumerID string) error {
+	consumerKey := fmt.Sprintf("consumer:%s", consumerID)
+	
+	err := c.rdb.HSet(ctx, consumerKey, "last_seen", time.Now().Format(time.RFC3339)).Err()
+	if err != nil {
+		return fmt.Errorf("failed to update last seen: %w", err)
+	}
+
+	return nil
+}
+
+// GetActiveConsumers returns all active consumer IDs
+func (c *Client) GetActiveConsumers(ctx context.Context) ([]string, error) {
+	activeConsumersKey := "consumers:active"
+	
+	consumers, err := c.rdb.SMembers(ctx, activeConsumersKey).Result()
+	if err != nil {
+		return nil, fmt.Errorf("failed to get active consumers: %w", err)
+	}
+
+	return consumers, nil
+}
+
+// UnregisterConsumer removes a consumer from the registry
+func (c *Client) UnregisterConsumer(ctx context.Context, consumerID string) error {
+	consumerKey := fmt.Sprintf("consumer:%s", consumerID)
+	activeConsumersKey := "consumers:active"
+
+	pipe := c.rdb.TxPipeline()
+	pipe.Del(ctx, consumerKey)
+	pipe.SRem(ctx, activeConsumersKey, consumerID)
+
+	_, err := pipe.Exec(ctx)
+	if err != nil {
+		return fmt.Errorf("failed to unregister consumer: %w", err)
+	}
+
+	return nil
+}
+
 // GetAllVersions returns all versions for a filename (sorted, newest first)
 func (c *Client) GetAllVersions(ctx context.Context, filename string) ([]string, error) {
 	versionsKey := fmt.Sprintf("file:%s:versions", filename)

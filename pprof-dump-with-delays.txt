@@ -1,0 +1,113 @@
+goroutine 51 [running]:
+runtime/pprof.writeGoroutineStacks({0x102ccd848, 0x140001b42d0})
+	/usr/local/go/src/runtime/pprof/pprof.go:756 +0x6c
+runtime/pprof.writeGoroutine({0x102ccd848?, 0x140001b42d0?}, 0x140001e37e8?)
+	/usr/local/go/src/runtime/pprof/pprof.go:745 +0x2c
+runtime/pprof.(*Profile).WriteTo(0x102efc8a0?, {0x102ccd848?, 0x140001b42d0?}, 0xc?)
+	/usr/local/go/src/runtime/pprof/pprof.go:371 +0x144
+net/http/pprof.handler.ServeHTTP({0x140001aa0a1, 0x9}, {0x102ccfcc0, 0x140001b42d0}, 0x140001d8000)
+	/usr/local/go/src/net/http/pprof/pprof.go:272 +0x414
+net/http/pprof.Index({0x102ccfcc0, 0x140001b42d0}, 0x140001d8000?)
+	/usr/local/go/src/net/http/pprof/pprof.go:389 +0xc0
+net/http.HandlerFunc.ServeHTTP(0x102f09720?, {0x102ccfcc0?, 0x140001b42d0?}, 0x1028f444c?)
+	/usr/local/go/src/net/http/server.go:2322 +0x38
+net/http.(*ServeMux).ServeHTTP(0x140001b2000?, {0x102ccfcc0, 0x140001b42d0}, 0x140001d8000)
+	/usr/local/go/src/net/http/server.go:2861 +0x190
+net/http.(*ServeMux).ServeHTTP(0x0?, {0x102ccfcc0, 0x140001b42d0}, 0x140001d8000)
+	/usr/local/go/src/net/http/server.go:2861 +0x190
+net/http.serverHandler.ServeHTTP({0x1400019a100?}, {0x102ccfcc0?, 0x140001b42d0?}, 0x1?)
+	/usr/local/go/src/net/http/server.go:3340 +0xb0
+net/http.(*conn).serve(0x1400019c120, {0x102cd0170, 0x14000115710})
+	/usr/local/go/src/net/http/server.go:2109 +0x528
+created by net/http.(*Server).Serve in goroutine 49
+	/usr/local/go/src/net/http/server.go:3493 +0x384
+
+goroutine 1 [chan receive]:
+main.main()
+	/Users/sisirakothe/vishu/control_plane/cmd/test-pprof-server/main.go:67 +0x31c
+
+goroutine 49 [IO wait]:
+internal/poll.runtime_pollWait(0x129d38e00, 0x72)
+	/usr/local/go/src/runtime/netpoll.go:351 +0xa0
+internal/poll.(*pollDesc).wait(0x14000176080?, 0x1029a398c?, 0x0)
+	/usr/local/go/src/internal/poll/fd_poll_runtime.go:84 +0x28
+internal/poll.(*pollDesc).waitRead(...)
+	/usr/local/go/src/internal/poll/fd_poll_runtime.go:89
+internal/poll.(*FD).Accept(0x14000176080)
+	/usr/local/go/src/internal/poll/fd_unix.go:613 +0x21c
+net.(*netFD).accept(0x14000176080)
+	/usr/local/go/src/net/fd_unix.go:161 +0x28
+net.(*TCPListener).accept(0x14000128340)
+	/usr/local/go/src/net/tcpsock_posix.go:159 +0x24
+net.(*TCPListener).Accept(0x14000128340)
+	/usr/local/go/src/net/tcpsock.go:380 +0x2c
+net/http.(*Server).Serve(0x140001ba000, {0x102ccfe40, 0x14000128340})
+	/usr/local/go/src/net/http/server.go:3463 +0x24c
+net/http.(*Server).ListenAndServe(0x140001ba000)
+	/usr/local/go/src/net/http/server.go:3389 +0x80
+main.main.func1()
+	/Users/sisirakothe/vishu/control_plane/cmd/test-pprof-server/main.go:58 +0x70
+created by main.main in goroutine 1
+	/Users/sisirakothe/vishu/control_plane/cmd/test-pprof-server/main.go:56 +0x2bc
+
+goroutine 20 [syscall]:
+os/signal.signal_recv()
+	/usr/local/go/src/runtime/sigqueue.go:149 +0x2c
+os/signal.loop()
+	/usr/local/go/src/os/signal/signal_unix.go:23 +0x1c
+created by os/signal.Notify.func1.1 in goroutine 1
+	/usr/local/go/src/os/signal/signal.go:152 +0x28
+
+goroutine 39 [sleep]:
+time.Sleep(0x77359400)
+	/usr/local/go/src/runtime/time.go:363 +0x150
+control-plane/internal/handlers.(*UploadHandler).acquireUploadLock(0x14000184210, {0x102ccfcc0, 0x140001684b0}, {0x102cd01a8, 0x1400016a550}, {0x14000104280?, 0x140001241fd?}, {0x14000104290, 0x5})
+	/Users/sisirakothe/vishu/control_plane/internal/handlers/upload.go:174 +0xa0
+control-plane/internal/handlers.(*UploadHandler).HandleUpload(0x14000184210, {0x102ccfcc0, 0x140001684b0}, 0x14000202000)
+	/Users/sisirakothe/vishu/control_plane/internal/handlers/upload.go:65 +0x128
+net/http.HandlerFunc.ServeHTTP(0x140001b2000?, {0x102ccfcc0?, 0x140001684b0?}, 0x1400016fb00?)
+	/usr/local/go/src/net/http/server.go:2322 +0x38
+net/http.(*ServeMux).ServeHTTP(0x10?, {0x102ccfcc0, 0x140001684b0}, 0x14000202000)
+	/usr/local/go/src/net/http/server.go:2861 +0x190
+net/http.serverHandler.ServeHTTP({0x102cceac0?}, {0x102ccfcc0?, 0x140001684b0?}, 0x1?)
+	/usr/local/go/src/net/http/server.go:3340 +0xb0
+net/http.(*conn).serve(0x140001583f0, {0x102cd0170, 0x14000115710})
+	/usr/local/go/src/net/http/server.go:2109 +0x528
+created by net/http.(*Server).Serve in goroutine 49
+	/usr/local/go/src/net/http/server.go:3493 +0x384
+
+goroutine 40 [IO wait]:
+internal/poll.runtime_pollWait(0x129d38c00, 0x72)
+	/usr/local/go/src/runtime/netpoll.go:351 +0xa0
+internal/poll.(*pollDesc).wait(0x14000176100?, 0x140001283a1?, 0x0)
+	/usr/local/go/src/internal/poll/fd_poll_runtime.go:84 +0x28
+internal/poll.(*pollDesc).waitRead(...)
+	/usr/local/go/src/internal/poll/fd_poll_runtime.go:89
+internal/poll.(*FD).Read(0x14000176100, {0x140001283a1, 0x1, 0x1})
+	/usr/local/go/src/internal/poll/fd_unix.go:165 +0x1e0
+net.(*netFD).Read(0x14000176100, {0x140001283a1?, 0x1400015e718?, 0x0?})
+	/usr/local/go/src/net/fd_posix.go:68 +0x28
+net.(*conn).Read(0x140001060d8, {0x140001283a1?, 0x140001ba000?, 0x0?})
+	/usr/local/go/src/net/net.go:196 +0x34
+net/http.(*connReader).backgroundRead(0x14000128380)
+	/usr/local/go/src/net/http/server.go:702 +0x38
+created by net/http.(*connReader).startBackgroundRead in goroutine 39
+	/usr/local/go/src/net/http/server.go:698 +0xb8
+
+goroutine 52 [IO wait]:
+internal/poll.runtime_pollWait(0x129d38a00, 0x72)
+	/usr/local/go/src/runtime/netpoll.go:351 +0xa0
+internal/poll.(*pollDesc).wait(0x140001d4000?, 0x1400019a121?, 0x0)
+	/usr/local/go/src/internal/poll/fd_poll_runtime.go:84 +0x28
+internal/poll.(*pollDesc).waitRead(...)
+	/usr/local/go/src/internal/poll/fd_poll_runtime.go:89
+internal/poll.(*FD).Read(0x140001d4000, {0x1400019a121, 0x1, 0x1})
+	/usr/local/go/src/internal/poll/fd_unix.go:165 +0x1e0
+net.(*netFD).Read(0x140001d4000, {0x1400019a121?, 0x0?, 0x0?})
+	/usr/local/go/src/net/fd_posix.go:68 +0x28
+net.(*conn).Read(0x14000186030, {0x1400019a121?, 0x0?, 0x0?})
+	/usr/local/go/src/net/net.go:196 +0x34
+net/http.(*connReader).backgroundRead(0x1400019a100)
+	/usr/local/go/src/net/http/server.go:702 +0x38
+created by net/http.(*connReader).startBackgroundRead in goroutine 51
+	/usr/local/go/src/net/http/server.go:698 +0xb8

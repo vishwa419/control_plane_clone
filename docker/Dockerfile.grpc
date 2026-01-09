@@ -1,0 +1,30 @@
+# Build stage
+FROM golang:1.24-alpine AS builder
+
+WORKDIR /app
+
+# Copy go mod files
+COPY go.mod go.sum ./
+RUN go mod download
+
+# Copy source code
+COPY . .
+
+# Build the gRPC server
+RUN CGO_ENABLED=0 GOOS=linux go build -o /app/grpc-server ./cmd/grpc-server
+
+# Runtime stage
+FROM alpine:latest
+
+RUN apk --no-cache add ca-certificates
+
+WORKDIR /app
+
+# Copy binary from builder
+COPY --from=builder /app/grpc-server .
+
+# Expose gRPC port (default 50051) and HTTP port (for broadcast endpoint)
+EXPOSE 50051 8082
+
+# Run the gRPC server
+CMD ["./grpc-server"]

@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"log"
 	"mime/multipart"
 	"net/http"
 	"sync"
@@ -18,20 +19,32 @@ import (
 	"control-plane/internal/storage"
 )
 
+// BroadcastClient interface for broadcasting worker updates
+type BroadcastClient interface {
+	BroadcastUpdate(workerName, version, checksum, filePath string, workerCode []byte, size int64) error
+}
+
 // UploadHandler handles file upload requests
 type UploadHandler struct {
-	storage storage.Storage
-	redis   *redis.Client
-	config  *config.Config
+	storage        storage.Storage
+	redis          *redis.Client
+	config         *config.Config
+	broadcastClient BroadcastClient // Optional - nil if not configured
 }
 
 // NewUploadHandler creates a new upload handler
 func NewUploadHandler(storage storage.Storage, redisClient *redis.Client, cfg *config.Config) *UploadHandler {
 	return &UploadHandler{
-		storage: storage,
-		redis:   redisClient,
-		config:  cfg,
+		storage:        storage,
+		redis:          redisClient,
+		config:         cfg,
+		broadcastClient: nil, // Set via SetBroadcastClient if needed
 	}
+}
+
+// SetBroadcastClient sets the broadcast client for pushing updates
+func (h *UploadHandler) SetBroadcastClient(client BroadcastClient) {
+	h.broadcastClient = client
 }
 
 // HandleUpload handles POST /upload requests
@@ -82,6 +95,23 @@ func (h *UploadHandler) HandleUpload(w http.ResponseWriter, r *http.Request) {
 	if err := h.storeMetadata(ctx, filePath, metadata); err != nil {
 		respondError(w, http.StatusInternalServerError, "Failed to store metadata", err)
 		return
+	}
+
+	// Broadcast update to consumers (non-blocking)
+	if h.broadcastClient != nil {
+		go func() {
+			if err := h.broadcastClient.BroadcastUpdate(
+				filename,
+				version,
+				checksum,
+				filePath,
+				fileData,
+				header.Size,
+			); err != nil {
+				// Log error but don't fail the upload
+				log.Printf("Failed to broadcast update for %s v%s: %v", filename, version, err)
+			}
+		}()
 	}
 
 	// Return success response
@@ -140,6 +170,8 @@ func (h *UploadHandler) parseUploadRequest(w http.ResponseWriter, r *http.Reques
 // Returns lockKey and true if lock was acquired, false otherwise
 func (h *UploadHandler) acquireUploadLock(w http.ResponseWriter, ctx context.Context, filename, version string) (string, bool) {
 	lockKey := fmt.Sprintf("lock:upload:%s:%s", filename, version)
+	// Delay for pprof visibility (remove in production)
+	time.Sleep(2 * time.Second)
 	acquired, err := h.redis.AcquireLock(ctx, lockKey, 30*time.Second)
 	if err != nil {
 		respondError(w, http.StatusInternalServerError, "Failed to acquire lock", err)
@@ -164,6 +196,8 @@ func (h *UploadHandler) processFileUpload(filename, version string, fileData []b
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
+		// Delay for pprof visibility (remove in production)
+		time.Sleep(3 * time.Second)
 		hash := sha256.Sum256(fileData)
 		checksum = hex.EncodeToString(hash[:])
 	}()
@@ -209,6 +243,8 @@ func (h *UploadHandler) verifyFile(filePath string, originalData []byte, expecte
 
 // storeMetadata stores metadata in Redis and handles rollback on failure
 func (h *UploadHandler) storeMetadata(ctx context.Context, filePath string, metadata *models.FileMetadata) error {
+	// Delay for pprof visibility (remove in production)
+	time.Sleep(2 * time.Second)
 	if err := h.redis.StoreFileMetadata(ctx, metadata); err != nil {
 		// Try to clean up file if Redis storage fails
 		_ = h.storage.Delete(filePath)

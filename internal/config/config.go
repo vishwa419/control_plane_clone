@@ -3,6 +3,7 @@ package config
 import (
 	"fmt"
 	"os"
+	"strconv"
 )
 
 // Config holds all configuration for the application
@@ -11,6 +12,7 @@ type Config struct {
 	Storage    StorageConfig
 	Upload     ServerConfig
 	Consumer   ServerConfig
+	GRPC       GRPCConfig
 }
 
 // RedisConfig holds Redis connection configuration
@@ -31,6 +33,12 @@ type ServerConfig struct {
 	Port string
 }
 
+// GRPCConfig holds gRPC server configuration
+type GRPCConfig struct {
+	Port      string
+	MaxStreams int
+}
+
 // LoadConfig loads configuration from environment variables
 func LoadConfig() *Config {
 	return &Config{
@@ -49,7 +57,20 @@ func LoadConfig() *Config {
 		Consumer: ServerConfig{
 			Port: getEnv("CONSUMER_PORT", "8081"),
 		},
+		GRPC: GRPCConfig{
+			Port:       getEnv("GRPC_PORT", "50051"),
+			MaxStreams: parseInt(getEnv("GRPC_MAX_STREAMS", "1000")),
+		},
 	}
+}
+
+// parseInt parses an integer from string, returns 0 on error
+func parseInt(s string) int {
+	result, err := strconv.Atoi(s)
+	if err != nil {
+		return 0
+	}
+	return result
 }
 
 // GetRedisAddr returns the Redis address in host:port format

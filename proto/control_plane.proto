@@ -1,0 +1,43 @@
+syntax = "proto3";
+
+package controlplane;
+
+option go_package = "control-plane/proto/gen;gen";
+
+// ControlPlane service for streaming worker updates
+service ControlPlane {
+  // SubscribeWorkerUpdates streams worker updates to consumers
+  rpc SubscribeWorkerUpdates(SubscribeRequest) returns (stream WorkerUpdate);
+  
+  // RegisterConsumer registers a consumer with the control plane
+  rpc RegisterConsumer(RegisterRequest) returns (RegisterResponse);
+}
+
+// SubscribeRequest is sent by consumer to subscribe to worker updates
+message SubscribeRequest {
+  string consumer_id = 1;
+  repeated string worker_names = 2; // Empty = all workers
+}
+
+// WorkerUpdate contains worker script and metadata
+message WorkerUpdate {
+  string worker_name = 1;
+  string version = 2;
+  string checksum = 3;
+  bytes worker_code = 4; // JavaScript/TypeScript code
+  int64 size = 5;
+  string file_path = 6;
+  int64 timestamp = 7;
+}
+
+// RegisterRequest registers a consumer
+message RegisterRequest {
+  string consumer_id = 1;
+  string endpoint = 2; // Consumer endpoint for health checks
+}
+
+// RegisterResponse confirms consumer registration
+message RegisterResponse {
+  bool success = 1;
+  string message = 2;
+}
